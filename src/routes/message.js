@@ -1,22 +1,22 @@
 const express = require('express')
 const router = express.Router();
 
+const mongoose = require('mongoose')
 const User = require('../models/user')
 const Message = require('../models/message')
 
 /** Route to get all messages. */
 router.get('/', (req, res) => {
-    // TODO: Get all Message objects using `.find()`
-
-    // TODO: Return the Message objects as a JSON list
+    Message.find({}, function(err, messages) {
+        return res.json({messages})
+    });
 })
 
 /** Route to get one message by id. */
 router.get('/:messageId', (req, res) => {
-    // TODO: Get the Message object with id matching `req.params.id`
-    // using `findOne`
-
-    // TODO: Return the matching Message object as JSON
+    Message.findById({_id : req.params.messageId}, function(err, message){
+        res.send(message)
+    });
 })
 
 /** Route to add a new message. */
@@ -27,12 +27,11 @@ router.post('/', (req, res) => {
         return User.findById(message.author)
     })
     .then(user => {
-        // console.log(user)
         user.messages.unshift(message)
         return user.save()
     })
     .then(() => {
-        return res.send(message)
+        return res.send({message})
     }).catch(err => {
         throw err.message
     })
@@ -40,17 +39,21 @@ router.post('/', (req, res) => {
 
 /** Route to update an existing message. */
 router.put('/:messageId', (req, res) => {
-    // TODO: Update the matching message using `findByIdAndUpdate`
-
-    // TODO: Return the updated Message object as JSON
+    Message.findByIdAndUpdate(req.params.messageId, {$set:{title:req.body.title, body:req.body.body}}, {new:true}, function(err, message){
+        console.log(message);
+        res.send({message: message});
+    }).catch((err)=>{
+        reject(err);
+     });
 })
 
 /** Route to delete a message. */
 router.delete('/:messageId', (req, res) => {
-    // TODO: Delete the specified Message using `findByIdAndDelete`. Make sure
-    // to also delete the message from the User object's `messages` array
-
-    // TODO: Return a JSON object indicating that the Message has been deleted
+    Message.findByIdAndRemove(req.params.messageId, function(err, message){
+        User.deleteMany({messages: req.params.messageId}, function(err, message){
+            res.send({message: 'Successfully deleted.'})
+        })
+    });
 })
 
 module.exports = router
