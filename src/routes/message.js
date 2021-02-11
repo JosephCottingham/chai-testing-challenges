@@ -40,7 +40,6 @@ router.post('/', (req, res) => {
 /** Route to update an existing message. */
 router.put('/:messageId', (req, res) => {
     Message.findByIdAndUpdate(req.params.messageId, {$set:{title:req.body.title, body:req.body.body}}, {new:true}, function(err, message){
-        console.log(message);
         res.send({message: message});
     }).catch((err)=>{
         reject(err);
